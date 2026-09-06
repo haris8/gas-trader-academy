@@ -33,6 +33,7 @@ npm.cmd run build
 ## Training Center
 
 - Lessons explain the NG contract, bid/ask tape, order types, liquidity, chart tools, and fundamental volatility.
+- Every lesson includes a focused interactive board with live calculations, visual feedback, and a plain-English takeaway.
 - Guided drills route learners back to the Trade Desk and highlight the exact quote, ticket, order book, or chart control to use.
 - The knowledge check grades each answer with a desk-focused explanation and requires 8 out of 10 to pass.
 - Completed lessons, drill evidence, best quiz score, XP, and rank persist in browser local storage.

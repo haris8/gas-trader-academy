@@ -23,6 +23,7 @@ import {
   TRAINING_LESSONS,
   scoreQuiz,
 } from './trainingContent.js'
+import LessonVisual from './LessonVisual.jsx'
 
 const LESSON_ICONS = {
   contract: CircleDollarSign,
@@ -100,6 +101,8 @@ function LessonLibrary({ completedLessons, onComplete }) {
             {lesson.objectives.map((objective) => <li key={objective}><Check size={14} aria-hidden="true" />{objective}</li>)}
           </ul>
         </section>
+
+        <LessonVisual key={lesson.id} lessonId={lesson.id} />
 
         <div className="lesson-copy">
           {lesson.sections.map((section, index) => (

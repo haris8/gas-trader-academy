@@ -15,7 +15,7 @@ export const TRAINING_LESSONS = [
     sections: [
       {
         title: 'What you are trading',
-        body: 'One standard NG futures contract represents 10,000 MMBtu of natural gas priced at Henry Hub. The simulator uses NGV6 as its training contract: NG is natural gas, V is the October month code, and 6 is the training year.',
+        body: 'One standard NG futures contract represents 10,000 MMBtu of natural gas priced at Henry Hub. MMBtu is the energy unit used in wholesale gas markets. The simulator uses NGV6 as its training contract: NG is natural gas, V is the October month code, and 6 is the training year.',
       },
       {
         title: 'Tick math',
@@ -45,7 +45,7 @@ export const TRAINING_LESSONS = [
     sections: [
       {
         title: 'Four prices in every candle',
-        body: 'Each candle summarizes a 15-minute auction. The body connects open and close; the wick shows the high and low. A green body closed above its open. A red body closed below it. Candle color alone does not prove what happens next.',
+        body: 'Each candle summarizes 15 minutes of trades between buyers and sellers. The body connects open and close; the wick shows the high and low. A green body closed above its open, while a red body closed below it. Candle color alone does not prove what happens next.',
       },
       {
         title: 'Last, bid, and ask',
@@ -105,7 +105,7 @@ export const TRAINING_LESSONS = [
     sections: [
       {
         title: 'Displayed depth',
-        body: 'Each ask row is displayed sell liquidity and each bid row is displayed buy liquidity. Size is available at that level; total is cumulative depth through that level. Displayed depth can change, so it is evidence, not a guarantee.',
+        body: 'Each ask row is displayed sell liquidity and each bid row is displayed buy liquidity. Size is available at that level; total is cumulative depth through that level. Orders already waiting at your price are ahead in the queue and normally fill first. Displayed depth can change, so it is evidence, not a guarantee.',
       },
       {
         title: 'Slippage and partial fills',
@@ -135,7 +135,7 @@ export const TRAINING_LESSONS = [
     sections: [
       {
         title: 'Start with structure',
-        body: 'Use the crosshair to inspect exact OHLC values. The horizontal-line tool marks support, resistance, or a catalyst level. The trend-line tool connects meaningful swing points. The ruler measures the tick and dollar distance between two points.',
+        body: 'Use the crosshair to inspect exact OHLC values: open, high, low, and close. Changing from 15 minutes to 1 hour groups four candles into one; it does not create new market information. Horizontal and trend lines mark structure, while the ruler measures the tick and dollar distance between two points.',
       },
       {
         title: 'Choose the benchmark',
@@ -165,7 +165,7 @@ export const TRAINING_LESSONS = [
     sections: [
       {
         title: 'Build the balance',
-        body: 'Hotter summer weather can raise power-burn demand. Higher production adds supply. LNG feedgas exports pull gas from the domestic balance. Storage reports show whether inventories changed more or less than the market expected; the surprise often matters more than the headline number.',
+        body: 'Hotter summer weather can raise power-burn demand. Higher production adds supply. LNG feedgas—the pipeline gas flowing into export plants—pulls gas from the domestic balance. Storage reports show whether inventories changed more or less than expected; the surprise often matters more than the headline number.',
       },
       {
         title: 'Read the curve',
@@ -173,7 +173,7 @@ export const TRAINING_LESSONS = [
       },
       {
         title: 'Long option risk',
-        body: 'A call benefits from higher futures prices and a put benefits from lower prices. The buyer pays premium up front and cannot lose more than premium plus fees. Delta estimates directional sensitivity. Theta estimates daily time decay, which works against a long option as expiry approaches.',
+        body: 'A call benefits from higher futures prices and a put benefits from lower prices relative to a reference price called the strike. The buyer pays premium up front and cannot lose more than premium plus fees. Delta estimates directional sensitivity. Theta estimates daily time decay, which works against a long option as expiry approaches.',
       },
     ],
     calculation: '0.120 premium x 10,000 MMBtu = $1,200 paid per option',
