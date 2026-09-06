@@ -14,7 +14,7 @@ function DepthRow({ level, side, maxDepth, cumulative }) {
   )
 }
 
-export default function MarketDepth({ book, onPriceOrder }) {
+export default function MarketDepth({ book, onPriceOrder, guided = false }) {
   const [view, setView] = useState('book')
   const maxDepth = Math.max(book.bidDepth, book.askDepth, 1)
   const asksWithCumulative = book.asks.reduce((rows, level) => {
@@ -30,7 +30,7 @@ export default function MarketDepth({ book, onPriceOrder }) {
   const ladder = Array.from({ length: 14 }, (_, index) => roundPrice(topPrice - index * TICK_SIZE))
 
   return (
-    <section className="depth-panel" aria-label="Market depth">
+    <section className={`depth-panel ${guided ? 'coach-target' : ''}`} aria-label="Market depth">
       <div className="compact-panel-header">
         <div>
           <span className="section-kicker">Liquidity · ladder 04</span>

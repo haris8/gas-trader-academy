@@ -35,7 +35,9 @@ import {
 } from 'lucide-react'
 import MarketDepth from './MarketDepth.jsx'
 import OptionsLab from './OptionsLab.jsx'
+import TrainingCenter from './TrainingCenter.jsx'
 import TradingChart from './TradingChart.jsx'
+import { PASSING_QUIZ_SCORE } from './trainingContent.js'
 import {
   BRIEFING_CARDS,
   CONTRACT_SIZE,
@@ -70,6 +72,7 @@ import {
 import './App.css'
 
 const LEADERBOARD_KEY = 'gas-trader-academy-board-v2'
+const TRAINING_KEY = 'gas-trader-academy-training-v1'
 const INITIAL_ACCOUNT = {
   cash: STARTING_CASH,
   realizedPnl: 0,
@@ -88,6 +91,7 @@ const NAV_ITEMS = [
   { id: 'trade', label: 'Trade Floor', icon: BarChart3 },
   { id: 'fundamentals', label: 'Field Desk', icon: CloudSun },
   { id: 'options', label: 'Vol Board', icon: CircleDollarSign },
+  { id: 'training', label: 'Training', icon: GraduationCap },
   { id: 'debrief', label: 'Closeout', icon: ListChecks },
 ]
 
@@ -97,6 +101,22 @@ function loadLeaderboard() {
     return Array.isArray(parsed) && parsed.length ? parsed : DEFAULT_LEADERS
   } catch {
     return DEFAULT_LEADERS
+  }
+}
+
+function loadTrainingRecord() {
+  const fallback = { completedLessons: [], completedDrills: [], quizAnswers: {}, quizSubmitted: false, quizBest: 0 }
+  try {
+    const parsed = JSON.parse(localStorage.getItem(TRAINING_KEY))
+    return {
+      completedLessons: Array.isArray(parsed?.completedLessons) ? parsed.completedLessons : [],
+      completedDrills: Array.isArray(parsed?.completedDrills) ? parsed.completedDrills : [],
+      quizAnswers: parsed?.quizAnswers && typeof parsed.quizAnswers === 'object' ? parsed.quizAnswers : {},
+      quizSubmitted: Boolean(parsed?.quizSubmitted),
+      quizBest: Number.isFinite(parsed?.quizBest) ? parsed.quizBest : 0,
+    }
+  } catch {
+    return fallback
   }
 }
 
@@ -409,11 +429,11 @@ function Fundamentals({ currentPrice, answers, setAnswers }) {
   )
 }
 
-function OrderTicket({ ticket, setTicket, book, onSubmit, onClosePosition, position }) {
+function OrderTicket({ ticket, setTicket, book, onSubmit, onClosePosition, position, guided = false }) {
   const update = (key, value) => setTicket((current) => ({ ...current, [key]: value }))
   const priceLabel = ticket.side === 'buy' ? book.bestAsk : book.bestBid
   return (
-    <section className="order-ticket" aria-label="Futures order ticket">
+    <section className={`order-ticket ${guided ? 'coach-target' : ''}`} aria-label="Futures order ticket">
       <div className="compact-panel-header"><div><span className="section-kicker">Chit 04-B · NG Oct</span><h3>Order Chit</h3></div><span className="tick-value">1 tick = {formatMoney(TICK_VALUE)}</span></div>
       <div className="side-picker"><button type="button" className={ticket.side === 'buy' ? 'active buy' : ''} onClick={() => update('side', 'buy')}><ArrowUpRight size={17} />Buy</button><button type="button" className={ticket.side === 'sell' ? 'active sell' : ''} onClick={() => update('side', 'sell')}><ArrowDownRight size={17} />Sell</button></div>
       <div className="ticket-field"><label htmlFor="order-type">Order type</label><select id="order-type" value={ticket.type} onChange={(event) => update('type', event.target.value)}><option value="market">Market</option><option value="limit">Limit</option><option value="stop">Stop Market</option><option value="stop-limit">Stop Limit</option></select></div>
@@ -451,23 +471,34 @@ function Blotter({ tab, setTab, account, markPrice, workingOrders, orderLog, fil
   )
 }
 
-function TradeDesk({ currentBar, previousBar, visibleBars, book, account, equity, availableFunds, workingOrders, orderLog, fills, ticket, setTicket, drawings, setDrawings, onDrawingCreated, onSubmit, onClosePosition, onPriceOrder, onCancel, blotterTab, setBlotterTab }) {
+function PracticeCoach({ drill, onComplete, onReturn }) {
+  return (
+    <section className="practice-coach" aria-label={`Guided drill ${drill.step}`}>
+      <div className="practice-coach-step"><span>DRILL</span><strong>{drill.step}</strong></div>
+      <div className="practice-coach-copy"><span className="section-kicker">Guided floor run / {drill.target} station</span><h3>{drill.title}</h3><p>{drill.actions.join(' ')}</p></div>
+      <div className="practice-coach-actions"><button type="button" onClick={onReturn}>Back to binder</button><button type="button" className="complete" onClick={onComplete}><CheckCircle2 size={16} />Complete step</button></div>
+    </section>
+  )
+}
+
+function TradeDesk({ currentBar, previousBar, visibleBars, book, account, equity, availableFunds, workingOrders, orderLog, fills, ticket, setTicket, drawings, setDrawings, onDrawingCreated, onSubmit, onClosePosition, onPriceOrder, onCancel, blotterTab, setBlotterTab, trainingDrill, onCompleteTrainingDrill, onReturnTraining }) {
   const change = currentBar.close - previousBar.close
   const changePct = change / previousBar.close
   const unrealized = futuresUnrealized(account.position, currentBar.close)
   const margin = Math.abs(account.position.quantity) * MARGIN_PER_CONTRACT
   return (
     <div className="trade-workspace">
-      <section className="market-overview-band">
+      {trainingDrill && <PracticeCoach drill={trainingDrill} onComplete={onCompleteTrainingDrill} onReturn={onReturnTraining} />}
+      <section className={`market-overview-band ${trainingDrill?.target === 'quote' ? 'coach-target' : ''}`}>
         <div className="instrument-quote"><div><span className="section-kicker">NYMEX · NGV6</span><h2>{formatPrice(currentBar.close)}</h2></div><span className={change >= 0 ? 'up' : 'down'}>{change >= 0 ? <ArrowUpRight size={17} /> : <ArrowDownRight size={17} />}{formatSigned(change, 3)} ({formatSigned(changePct * 100, 2)}%)</span></div>
         <div className="desk-account-strip"><div><span>Futures P&amp;L</span><strong className={unrealized >= 0 ? 'positive-text' : 'negative-text'}>{formatMoney(unrealized)}</strong></div><div><span>Position</span><strong>{account.position.quantity ? `${account.position.quantity > 0 ? 'Long' : 'Short'} ${Math.abs(account.position.quantity)}` : 'Flat'}</strong></div><div><span>Margin used</span><strong>{formatMoney(margin)}</strong></div><div><span>Available</span><strong>{formatMoney(availableFunds)}</strong></div><div><span>Equity</span><strong>{formatMoney(equity)}</strong></div></div>
       </section>
       <div className="trade-grid">
         <div className="chart-column">
-          <section className="chart-panel"><TradingChart bars={visibleBars} position={account.position} workingOrders={workingOrders} drawings={drawings} onDrawingsChange={setDrawings} onDrawingCreated={onDrawingCreated} /></section>
+          <section className={`chart-panel ${trainingDrill?.target === 'chart' ? 'coach-target' : ''}`}><TradingChart bars={visibleBars} position={account.position} workingOrders={workingOrders} drawings={drawings} onDrawingsChange={setDrawings} onDrawingCreated={onDrawingCreated} /></section>
           <section className={`market-news ${currentBar.event?.sentiment ?? 'neutral'}`}><Bell size={19} aria-hidden="true" /><time>{currentBar.time}</time><div><span>{currentBar.event?.category ?? 'Market flow'}</span><strong>{currentBar.event?.headline ?? 'Order flow controls the tape'}</strong><p>{currentBar.event?.detail}</p></div></section>
         </div>
-        <aside className="execution-column"><OrderTicket ticket={ticket} setTicket={setTicket} book={book} onSubmit={onSubmit} onClosePosition={onClosePosition} position={account.position} /><MarketDepth book={book} onPriceOrder={onPriceOrder} /></aside>
+        <aside className="execution-column"><OrderTicket ticket={ticket} setTicket={setTicket} book={book} onSubmit={onSubmit} onClosePosition={onClosePosition} position={account.position} guided={trainingDrill?.target === 'ticket'} /><MarketDepth book={book} onPriceOrder={onPriceOrder} guided={trainingDrill?.target === 'depth'} /></aside>
       </div>
       <Blotter tab={blotterTab} setTab={setBlotterTab} account={account} markPrice={currentBar.close} workingOrders={workingOrders} orderLog={orderLog} fills={fills} onCancel={onCancel} />
     </div>
@@ -517,6 +548,10 @@ function App() {
   const [handle, setHandle] = useState('Rookie')
   const [notice, setNotice] = useState('Morning handoff is ready. Build a game plan before the first catalyst.')
   const [risk, setRisk] = useState({ peak: STARTING_CASH, maxDrawdown: 0, maxMargin: 0 })
+  const [trainingRecord, setTrainingRecord] = useState(loadTrainingRecord)
+  const [trainingTab, setTrainingTab] = useState('lessons')
+  const [practiceDrill, setPracticeDrill] = useState(null)
+  const [domPriceStaged, setDomPriceStaged] = useState(false)
   const [ticket, setTicket] = useState({ side: 'buy', type: 'market', quantity: 1, limitPrice: '', stopPrice: '', timeInForce: 'DAY', reduceOnly: false, bracket: true, stopOffset: '0.035', targetOffset: '0.060' })
 
   const activeIndex = LOOKBACK_BARS + step
@@ -534,10 +569,19 @@ function App() {
   const finished = step === SESSION_STEPS - 1
   const correctBriefReads = BRIEFING_CARDS.filter((card) => briefResponses[card.id] === card.correct).length
   const correctFundReads = FUNDAMENTAL_QUESTIONS.filter((question) => fundAnswers[question.id] === question.correct).length
+  const liveDrills = useMemo(() => ({
+    bracket: orderLog.some((order) => Boolean(order.ocoGroup)),
+    dom: domPriceStaged,
+    stop: orderLog.some((order) => order.type === 'stop'),
+    partial: fills.some((fill) => fill.partial),
+    chart: usedDrawingTool,
+  }), [domPriceStaged, fills, orderLog, usedDrawingTool])
 
   const missions = [
     { id: 'brief', label: 'Complete morning brief', points: 350, done: briefLocked },
     { id: 'fundamentals', label: 'Finish fundamentals drills', points: 450, done: Object.keys(fundAnswers).length === FUNDAMENTAL_QUESTIONS.length },
+    { id: 'lesson', label: 'Stamp a desk lesson', points: 250, done: trainingRecord.completedLessons.length > 0 },
+    { id: 'quiz', label: 'Pass the knowledge check', points: 500, done: trainingRecord.quizBest >= PASSING_QUIZ_SCORE },
     { id: 'limit', label: 'Work a limit order', points: 300, done: orderLog.some((order) => order.type === 'limit') },
     { id: 'partial', label: 'Experience a partial fill', points: 425, done: fills.some((fill) => fill.partial) },
     { id: 'stop', label: 'Protect risk with a stop', points: 375, done: orderLog.some((order) => order.type === 'stop') },
@@ -547,13 +591,16 @@ function App() {
   ]
   const missionXp = missions.filter((mission) => mission.done).reduce((sum, mission) => sum + mission.points, 0)
   const skillXp = correctBriefReads * 90 + correctFundReads * 120 + (thesis === 'bullish' && briefLocked ? 180 : 0)
-  const xp = missionXp + skillXp
+  const trainingXp = trainingRecord.completedLessons.length * 120 + trainingRecord.completedDrills.length * 175 + trainingRecord.quizBest * 40
+  const xp = missionXp + skillXp + trainingXp
   const rank = xp >= 2900 ? 'Senior Trader' : xp >= 1900 ? 'Trader' : xp >= 900 ? 'Junior Trader' : 'Analyst'
   const pnl = equity - STARTING_CASH
   const score = Math.max(0, Math.round(1800 + xp + pnl / 4 - risk.maxDrawdown / 15))
   const executionRate = orderLog.length ? Math.round((fills.length / orderLog.length) * 100) : 0
 
   useEffect(() => { localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(leaderboard)) }, [leaderboard])
+  useEffect(() => { localStorage.setItem(TRAINING_KEY, JSON.stringify(trainingRecord)) }, [trainingRecord])
+  useEffect(() => { window.scrollTo({ top: 0, behavior: 'auto' }) }, [activeView])
 
   const updateRisk = useCallback((nextEquity, nextMargin) => {
     setRisk((current) => {
@@ -691,6 +738,7 @@ function App() {
 
   function prepareDomOrder(side, price) {
     setTicket((current) => ({ ...current, side, type: 'limit', limitPrice: price.toFixed(3), reduceOnly: false }))
+    setDomPriceStaged(true)
     setNotice(`${side === 'buy' ? 'Buy' : 'Sell'} limit staged at ${formatPrice(price)}. Review the ticket to send it.`)
   }
 
@@ -733,12 +781,40 @@ function App() {
     setNotice(`${entry.name} posted ${score.toLocaleString()} points to the local league.`)
   }
 
+  function startTrainingDrill(drill) {
+    setPracticeDrill(drill)
+    setTrainingTab('tutorial')
+    setActiveView('trade')
+    setNotice(`Guided drill ${drill.step}: ${drill.title}. The ${drill.target} station is marked in orange.`)
+  }
+
+  function returnToTraining() {
+    setPracticeDrill(null)
+    setActiveView('training')
+    setTrainingTab('tutorial')
+    setNotice('Practice run closed. Choose a drill from the training binder when you are ready to return to the floor.')
+  }
+
+  function completeTrainingDrill() {
+    if (!practiceDrill) return
+    setTrainingRecord((current) => ({
+      ...current,
+      completedDrills: current.completedDrills.includes(practiceDrill.id) ? current.completedDrills : [...current.completedDrills, practiceDrill.id],
+    }))
+    setNotice(`Drill ${practiceDrill.step} stamped complete. Choose the next floor route from the training binder.`)
+    setPracticeDrill(null)
+    setActiveView('training')
+    setTrainingTab('tutorial')
+  }
+
   function resetScenario(nextDifficulty = difficulty, nextSeed = scenarioSeed) {
     setDifficulty(nextDifficulty)
     setScenarioSeed(nextSeed)
     setStep(0)
     setActiveView('briefing')
     setAutoPlay(false)
+    setPracticeDrill(null)
+    setDomPriceStaged(false)
     setAccount(INITIAL_ACCOUNT)
     setWorkingOrders([])
     setOrderLog([])
@@ -779,9 +855,10 @@ function App() {
           <div className="stage-toolbar"><SessionTimeline step={step} /><div className="difficulty-control"><Gauge size={16} /><select aria-label="Difficulty" value={difficulty} onChange={(event) => resetScenario(event.target.value, todaySeed)}>{Object.entries(DIFFICULTIES).map(([id, item]) => <option key={id} value={id}>{item.label}</option>)}</select></div></div>
           <div className="notice-bar" role="status"><Activity size={16} /><span>{notice}</span><button type="button" title="Dismiss message" onClick={() => setNotice('Desk systems normal.')}><X size={14} /></button></div>
           {activeView === 'briefing' && <MorningBrief responses={briefResponses} setResponses={setBriefResponses} thesis={thesis} setThesis={setThesis} locked={briefLocked} onCommit={commitBrief} onOpenDesk={() => setActiveView('trade')} />}
-          {activeView === 'trade' && <TradeDesk currentBar={currentBar} previousBar={previousBar} visibleBars={visibleBars} book={book} account={account} equity={equity} availableFunds={availableFunds} workingOrders={workingOrders} orderLog={orderLog} fills={fills} ticket={ticket} setTicket={setTicket} drawings={drawings} setDrawings={setDrawings} onDrawingCreated={() => setUsedDrawingTool(true)} onSubmit={submitFuturesOrder} onClosePosition={closeFuturesPosition} onPriceOrder={prepareDomOrder} onCancel={cancelOrder} blotterTab={blotterTab} setBlotterTab={setBlotterTab} />}
+          {activeView === 'trade' && <TradeDesk currentBar={currentBar} previousBar={previousBar} visibleBars={visibleBars} book={book} account={account} equity={equity} availableFunds={availableFunds} workingOrders={workingOrders} orderLog={orderLog} fills={fills} ticket={ticket} setTicket={setTicket} drawings={drawings} setDrawings={setDrawings} onDrawingCreated={() => setUsedDrawingTool(true)} onSubmit={submitFuturesOrder} onClosePosition={closeFuturesPosition} onPriceOrder={prepareDomOrder} onCancel={cancelOrder} blotterTab={blotterTab} setBlotterTab={setBlotterTab} trainingDrill={practiceDrill} onCompleteTrainingDrill={completeTrainingDrill} onReturnTraining={returnToTraining} />}
           {activeView === 'fundamentals' && <Fundamentals currentPrice={currentBar.close} answers={fundAnswers} setAnswers={setFundAnswers} />}
           {activeView === 'options' && <OptionsLab chain={optionsChain} futuresPrice={currentBar.close} positions={{ items: optionPositions, orderQuantity: optionQuantity, setOrderQuantity: setOptionQuantity }} onBuy={buyOption} onClose={closeOption} />}
+          {activeView === 'training' && <TrainingCenter record={trainingRecord} setRecord={setTrainingRecord} activeTab={trainingTab} setActiveTab={setTrainingTab} liveDrills={liveDrills} onPractice={startTrainingDrill} />}
           {activeView === 'debrief' && <Debrief stats={stats} missions={missions} journal={journal} setJournal={setJournal} leaderboard={leaderboard} handle={handle} setHandle={setHandle} onSave={saveScore} onReset={() => setLeaderboard(DEFAULT_LEADERS)} finished={finished} onTrade={() => setActiveView('trade')} />}
         </main>
       </div>
