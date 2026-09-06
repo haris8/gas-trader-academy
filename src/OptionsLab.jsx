@@ -68,8 +68,8 @@ export default function OptionsLab({ chain, futuresPrice, positions, onBuy, onCl
     <div className="options-workspace">
       <section className="options-header-band">
         <div>
-          <span className="section-kicker">Risk-defined strategies</span>
-          <h2>Options Lab</h2>
+          <span className="section-kicker">Vol sheet · risk-defined structures</span>
+          <h2>The Vol Board</h2>
           <p>Henry Hub options on futures · 24-day training expiry</p>
         </div>
         <div className="option-summary-strip">
@@ -84,7 +84,7 @@ export default function OptionsLab({ chain, futuresPrice, positions, onBuy, onCl
         <section className="options-chain-panel">
           <div className="chain-toolbar">
             <div>
-              <span className="section-kicker">NG options</span>
+              <span className="section-kicker">NG options · sheet V-24</span>
               <h3>October Chain</h3>
             </div>
             <div className="contract-stepper">
@@ -167,7 +167,7 @@ export default function OptionsLab({ chain, futuresPrice, positions, onBuy, onCl
       <section className="payoff-panel">
         <div className="compact-panel-header">
           <div>
-            <span className="section-kicker">Scenario view</span>
+            <span className="section-kicker">Grease-pencil scenario</span>
             <h3>Expiration Payoff</h3>
           </div>
           <span className="payoff-note">Includes premium paid</span>

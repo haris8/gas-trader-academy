@@ -33,8 +33,8 @@ export default function MarketDepth({ book, onPriceOrder }) {
     <section className="depth-panel" aria-label="Market depth">
       <div className="compact-panel-header">
         <div>
-          <span className="section-kicker">Liquidity</span>
-          <h3>Market Depth</h3>
+          <span className="section-kicker">Liquidity · ladder 04</span>
+          <h3>Book &amp; Ladder</h3>
         </div>
         <div className="mini-tabs" aria-label="Depth view">
           <button type="button" className={view === 'book' ? 'active' : ''} title="Order book" onClick={() => setView('book')}>

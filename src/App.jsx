@@ -84,11 +84,11 @@ const DEFAULT_LEADERS = [
 ]
 
 const NAV_ITEMS = [
-  { id: 'briefing', label: 'Morning Brief', icon: Newspaper },
-  { id: 'trade', label: 'Trade Desk', icon: BarChart3 },
-  { id: 'fundamentals', label: 'Fundamentals', icon: CloudSun },
-  { id: 'options', label: 'Options Lab', icon: CircleDollarSign },
-  { id: 'debrief', label: 'Debrief', icon: ListChecks },
+  { id: 'briefing', label: '06:00 Wire', icon: Newspaper },
+  { id: 'trade', label: 'Trade Floor', icon: BarChart3 },
+  { id: 'fundamentals', label: 'Field Desk', icon: CloudSun },
+  { id: 'options', label: 'Vol Board', icon: CircleDollarSign },
+  { id: 'debrief', label: 'Closeout', icon: ListChecks },
 ]
 
 function loadLeaderboard() {
@@ -243,7 +243,7 @@ function QuestList({ missions }) {
   const complete = missions.filter((mission) => mission.done).length
   return (
     <div className="quest-block">
-      <div className="quest-title"><span>Shift Quests</span><strong>{complete}/{missions.length}</strong></div>
+      <div className="quest-title"><span>Punch List</span><strong>{complete}/{missions.length}</strong></div>
       <div className="quest-progress"><i style={{ width: `${(complete / missions.length) * 100}%` }} /></div>
       <div className="quest-list">
         {missions.slice(0, 6).map((mission) => (
@@ -261,18 +261,18 @@ function MorningBrief({ responses, setResponses, thesis, setThesis, locked, onCo
     <div className="briefing-workspace">
       <section className="briefing-lead">
         <div>
-          <span className="section-kicker">06:00 CT · Tuesday shift</span>
-          <h2>Build the morning game plan</h2>
-          <p>Read the overnight changes, classify each market impact, then commit to a desk bias before liquidity arrives.</p>
+          <span className="section-kicker">Dispatch copy 06-A · Tuesday shift</span>
+          <h2>Make the 7:00 call</h2>
+          <p>Mark the overnight wire, weigh each pressure on Henry Hub, then pin a bias before the opening rotation.</p>
         </div>
-        <div className="brief-score"><span>Signal read</span><strong>{locked ? `${correctReads}/3` : `${answered}/3`}</strong><small>{locked ? 'graded' : 'reviewed'}</small></div>
+        <div className="brief-score"><span>Tape read</span><strong>{locked ? `${correctReads}/3` : `${answered}/3`}</strong><small>{locked ? 'graded' : 'marked'}</small></div>
       </section>
 
       <div className="briefing-grid">
         <section className="brief-cards-area">
           <div className="section-heading">
-            <div><span className="section-kicker">Overnight intelligence</span><h3>Signal Board</h3></div>
-            <span className="live-pill"><i /> LIVE FEED</span>
+            <div><span className="section-kicker">Overnight intelligence</span><h3>Overnight Wire</h3></div>
+            <span className="live-pill"><i /> WIRE HOT</span>
           </div>
           <div className="brief-card-list">
             {BRIEFING_CARDS.map((card) => {
@@ -305,7 +305,7 @@ function MorningBrief({ responses, setResponses, thesis, setThesis, locked, onCo
         <aside className="brief-side">
           <section className="thesis-panel">
             <span className="section-kicker">Desk decision</span>
-            <h3>Opening Bias</h3>
+            <h3>Pin the Call</h3>
             <p>What is the net message from the board?</p>
             <div className="thesis-options">
               {['bullish', 'neutral', 'bearish'].map((choice) => (
@@ -323,7 +323,7 @@ function MorningBrief({ responses, setResponses, thesis, setThesis, locked, onCo
           </section>
 
           <section className="catalyst-panel">
-            <div className="compact-panel-header"><div><span className="section-kicker">Today</span><h3>Catalyst Calendar</h3></div><CalendarClock size={20} /></div>
+            <div className="compact-panel-header"><div><span className="section-kicker">Today</span><h3>Dispatch Clock</h3></div><CalendarClock size={20} /></div>
             <div className="catalyst-list">
               {SESSION_EVENTS.filter((event) => event.step > 0).slice(0, 6).map((event) => (
                 <div key={event.step}><time>{sessionTime(event.step)}</time><span>{event.category}</span><i className={event.sentiment} /></div>
@@ -362,7 +362,7 @@ function Fundamentals({ currentPrice, answers, setAnswers }) {
   return (
     <div className="fundamentals-workspace">
       <section className="view-title-band">
-        <div><span className="section-kicker">Physical market intelligence</span><h2>Fundamentals Room</h2><p>Translate weather, storage, production, and infrastructure into a tradeable balance.</p></div>
+        <div><span className="section-kicker">Field sheet · Gulf Coast balance</span><h2>The Field Desk</h2><p>Turn weather, storage, production, and pipe constraints into a tradeable balance.</p></div>
         <div className="room-score"><GraduationCap size={21} /><strong>{correct}/{FUNDAMENTAL_QUESTIONS.length}</strong><span>reads correct</span></div>
       </section>
 
@@ -372,7 +372,7 @@ function Fundamentals({ currentPrice, answers, setAnswers }) {
 
       <div className="fund-grid">
         <section className="weather-panel">
-          <div className="section-heading"><div><span className="section-kicker">Forecast demand</span><h3>Regional Weather Load</h3></div><span className="model-time">06z ensemble</span></div>
+          <div className="section-heading"><div><span className="section-kicker">Forecast demand</span><h3>Demand Board</h3></div><span className="model-time">06z ensemble</span></div>
           <div className="weather-map" aria-label="Simplified regional weather demand map">
             <div className="region west normal"><span>WEST</span><strong>Normal</strong><small>+0.1 Bcf/d</small></div>
             <div className="region midwest warm"><span>MIDWEST</span><strong>Warm</strong><small>+0.4 Bcf/d</small></div>
@@ -391,7 +391,7 @@ function Fundamentals({ currentPrice, answers, setAnswers }) {
       </div>
 
       <section className="scenario-drill">
-        <div className="section-heading"><div><span className="section-kicker">Desk drills</span><h3>Make the Call</h3></div><Target size={21} /></div>
+        <div className="section-heading"><div><span className="section-kicker">Red-pencil drills</span><h3>Mark the Balance</h3></div><Target size={21} /></div>
         <div className="drill-grid">
           {FUNDAMENTAL_QUESTIONS.map((question, index) => {
             const answer = answers[question.id]
@@ -414,7 +414,7 @@ function OrderTicket({ ticket, setTicket, book, onSubmit, onClosePosition, posit
   const priceLabel = ticket.side === 'buy' ? book.bestAsk : book.bestBid
   return (
     <section className="order-ticket" aria-label="Futures order ticket">
-      <div className="compact-panel-header"><div><span className="section-kicker">NG · Oct</span><h3>Order Ticket</h3></div><span className="tick-value">1 tick = {formatMoney(TICK_VALUE)}</span></div>
+      <div className="compact-panel-header"><div><span className="section-kicker">Chit 04-B · NG Oct</span><h3>Order Chit</h3></div><span className="tick-value">1 tick = {formatMoney(TICK_VALUE)}</span></div>
       <div className="side-picker"><button type="button" className={ticket.side === 'buy' ? 'active buy' : ''} onClick={() => update('side', 'buy')}><ArrowUpRight size={17} />Buy</button><button type="button" className={ticket.side === 'sell' ? 'active sell' : ''} onClick={() => update('side', 'sell')}><ArrowDownRight size={17} />Sell</button></div>
       <div className="ticket-field"><label htmlFor="order-type">Order type</label><select id="order-type" value={ticket.type} onChange={(event) => update('type', event.target.value)}><option value="market">Market</option><option value="limit">Limit</option><option value="stop">Stop Market</option><option value="stop-limit">Stop Limit</option></select></div>
       <div className="quantity-field"><span>Contracts</span><div><button type="button" title="Decrease contracts" onClick={() => update('quantity', clamp(ticket.quantity - 1, 1, 25))}><Minus size={15} /></button><strong>{ticket.quantity}</strong><button type="button" title="Increase contracts" onClick={() => update('quantity', clamp(ticket.quantity + 1, 1, 25))}><Plus size={15} /></button></div></div>
@@ -478,11 +478,11 @@ function Debrief({ stats, missions, journal, setJournal, leaderboard, handle, se
   const grade = stats.score >= 7000 ? 'A' : stats.score >= 5600 ? 'B' : stats.score >= 4300 ? 'C' : 'D'
   return (
     <div className="debrief-workspace">
-      <section className="debrief-score-band"><div className="grade-mark"><span>DESK GRADE</span><strong>{grade}</strong></div><div><span className="section-kicker">End-of-day review</span><h2>{finished ? 'Shift complete' : 'Live performance review'}</h2><p>{finished ? 'Settlement is final. Review process quality before starting the next scenario.' : 'The desk report updates throughout the session. Finish at settlement to lock the score.'}</p></div><div className="score-total"><span>Desk score</span><strong>{stats.score.toLocaleString()}</strong><small>{stats.rank}</small></div></section>
+      <section className="debrief-score-band"><div className="grade-mark"><span>SHIFT MARK</span><strong>{grade}</strong></div><div><span className="section-kicker">Closeout sheet · Form 13-C</span><h2>{finished ? 'Books closed' : 'Live closeout sheet'}</h2><p>{finished ? 'Settlement is final. Mark the decisions that held up and the ones that did not.' : 'This sheet updates with the tape. Reach settlement to stamp the final score.'}</p></div><div className="score-total"><span>Shift score</span><strong>{stats.score.toLocaleString()}</strong><small>{stats.rank}</small></div></section>
       <section className="debrief-metrics"><div><Activity /><span>Total P&amp;L</span><strong className={stats.pnl >= 0 ? 'positive-text' : 'negative-text'}>{formatMoney(stats.pnl)}</strong></div><div><ShieldAlert /><span>Max drawdown</span><strong>{formatMoney(stats.maxDrawdown)}</strong></div><div><Zap /><span>Learning XP</span><strong>{stats.xp.toLocaleString()}</strong></div><div><Gauge /><span>Execution rate</span><strong>{stats.executionRate}%</strong></div></section>
       <div className="debrief-grid">
-        <section className="mission-review"><div className="section-heading"><div><span className="section-kicker">Performance</span><h3>Shift Quests</h3></div><Target size={21} /></div><div className="mission-review-list">{missions.map((mission) => <div key={mission.id} className={mission.done ? 'done' : ''}><CheckCircle2 size={17} /><span>{mission.label}</span><strong>{mission.done ? `+${mission.points}` : 'Open'}</strong></div>)}</div></section>
-        <section className="journal-panel"><div className="section-heading"><div><span className="section-kicker">Process</span><h3>Trader Journal</h3></div><BookOpen size={21} /></div><label htmlFor="trade-journal">What was your thesis, best decision, and biggest mistake?</label><textarea id="trade-journal" value={journal} onChange={(event) => setJournal(event.target.value)} placeholder="I expected... I entered because... Next shift I will..." /><div className="journal-prompts"><span>Thesis</span><span>Execution</span><span>Risk</span><span>Next adjustment</span></div></section>
+        <section className="mission-review"><div className="section-heading"><div><span className="section-kicker">Performance</span><h3>Punch List</h3></div><Target size={21} /></div><div className="mission-review-list">{missions.map((mission) => <div key={mission.id} className={mission.done ? 'done' : ''}><CheckCircle2 size={17} /><span>{mission.label}</span><strong>{mission.done ? `+${mission.points}` : 'Open'}</strong></div>)}</div></section>
+        <section className="journal-panel"><div className="section-heading"><div><span className="section-kicker">Process</span><h3>Desk Log</h3></div><BookOpen size={21} /></div><label htmlFor="trade-journal">What was your thesis, best decision, and biggest mistake?</label><textarea id="trade-journal" value={journal} onChange={(event) => setJournal(event.target.value)} placeholder="I expected... I entered because... Next shift I will..." /><div className="journal-prompts"><span>Thesis</span><span>Execution</span><span>Risk</span><span>Next adjustment</span></div></section>
         <section className="leaderboard-panel"><div className="section-heading"><div><span className="section-kicker">Local league</span><h3>Leaderboard</h3></div><Medal size={21} /></div><div className="leaderboard-entry"><input aria-label="Trader handle" maxLength={18} value={handle} onChange={(event) => setHandle(event.target.value)} /><button type="button" title="Save score" onClick={onSave}><Save size={17} /></button><button type="button" title="Reset leaderboard" onClick={onReset}><Trash2 size={17} /></button></div><ol className="leaderboard-list">{leaderboard.map((entry, index) => <li key={`${entry.name}-${entry.score}-${index}`}><span>{index + 1}</span><div><strong>{entry.name}</strong><small>{entry.rank} · {formatMoney(entry.pnl)}</small></div><b>{entry.score.toLocaleString()}</b></li>)}</ol></section>
       </div>
       {!finished && <button type="button" className="return-desk" onClick={onTrade}>Return to trade desk <ChevronRight size={17} /></button>}
@@ -763,7 +763,7 @@ function App() {
   return (
     <div className="app-shell">
       <header className="app-topbar">
-        <div className="brand-lockup"><div className="brand-mark"><Flame size={22} /></div><div><strong>Gas Trader Academy</strong><span>Henry Hub Desk Sim</span></div></div>
+        <div className="brand-lockup"><div className="brand-mark"><Flame size={22} /></div><div><span className="brand-route">Louisiana · Floor 04</span><strong>Gas Trader Academy</strong><span>Henry Hub dispatch simulator</span></div></div>
         <div className={`market-status ${finished ? 'settled' : ''}`}><i /> {finished ? 'SESSION SETTLED' : 'MARKET OPEN'} <span>{currentBar.time} CT</span></div>
         <div className="top-metrics"><Metric icon={Trophy} label="Score" value={score.toLocaleString()} tone="gold" /><Metric icon={Zap} label="XP" value={xp.toLocaleString()} tone="xp" /><Metric icon={Wallet} label="Equity" value={formatMoney(equity)} tone={pnl >= 0 ? 'positive' : 'negative'} /></div>
         <div className="session-controls"><button type="button" title="Load a new scenario" onClick={() => resetScenario(difficulty, `${scenarioSeed}-next`)}><RefreshCw size={17} /></button><button type="button" className={autoPlay ? 'active' : ''} title={autoPlay ? 'Pause market' : 'Run market'} onClick={() => setAutoPlay((current) => !current)} disabled={finished}>{autoPlay ? <Pause size={17} /> : <Play size={17} />}</button><button type="button" className="next-tick" onClick={advanceOneStep} disabled={finished}>Next 15m <ChevronRight size={16} /></button></div>
@@ -771,9 +771,9 @@ function App() {
       <div className="app-body">
         <aside className="app-sidebar">
           <nav aria-label="Trader day views">{NAV_ITEMS.map(({ id, label, icon: Icon }) => <button key={id} type="button" className={activeView === id ? 'active' : ''} title={label} onClick={() => setActiveView(id)}><Icon size={19} /><span>{label}</span></button>)}</nav>
-          <div className="sidebar-rank"><span>Desk rank</span><strong>{rank}</strong><div><i style={{ width: `${Math.min(100, (xp / 2900) * 100)}%` }} /></div><small>{Math.max(0, 2900 - xp)} XP to Senior</small></div>
+          <div className="sidebar-rank"><span>Floor badge</span><strong>{rank}</strong><div><i style={{ width: `${Math.min(100, (xp / 2900) * 100)}%` }} /></div><small>{Math.max(0, 2900 - xp)} XP to Senior</small></div>
           <QuestList missions={missions} />
-          <div className="training-note"><GraduationCap size={17} /><span>Educational simulation. No live orders or market data.</span></div>
+          <div className="training-note"><GraduationCap size={17} /><span>Training floor · simulated tape · no live routing.</span></div>
         </aside>
         <main className="main-stage">
           <div className="stage-toolbar"><SessionTimeline step={step} /><div className="difficulty-control"><Gauge size={16} /><select aria-label="Difficulty" value={difficulty} onChange={(event) => resetScenario(event.target.value, todaySeed)}>{Object.entries(DIFFICULTIES).map(([id, item]) => <option key={id} value={id}>{item.label}</option>)}</select></div></div>
