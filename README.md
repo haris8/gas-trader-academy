@@ -27,7 +27,19 @@ npm.cmd run build
 - Trade Desk: trade a deterministic intraday Henry Hub scenario through scheduled market catalysts.
 - Fundamentals Room: inspect regional weather load, physical balance metrics, the futures curve, storage surprises, and basis scenarios.
 - Options Lab: trade calls and puts with bid/ask quotes, implied volatility, delta, theta, premium accounting, and expiration payoff charts.
+- Training Center: study six desk lessons, run guided drills against the live simulator, and pass a ten-question knowledge check.
 - Debrief: review P&L, max drawdown, execution quality, completed quests, journal notes, rank, and the local leaderboard.
+
+## Training Center
+
+- Six beginner-first lesson carousels contain 39 short steps covering the NG contract, bid/ask tape, orders, liquidity, chart tools, fundamentals, and options.
+- Each step introduces its terms, walks through a numerical example, and provides focused practice plus a connection to the actual trading desk.
+- Practice includes quote-by-quote order replays, stop gaps, linked exits, partial fills, queue position, storage surprises, delivery-month curves, and option payoff/time-value controls.
+- Chart lessons use the same chart as the Trade Floor, with isolated practice drawings and indicator controls that do not change the trading account.
+- Understanding checks give immediate explanations and allow retries. New lesson completion requires visiting every step and answering the check correctly; existing completion stamps are preserved.
+- Guided drills route learners back to the Trade Desk and highlight the exact quote, ticket, order book, or chart control to use.
+- The knowledge check grades each answer with a desk-focused explanation and requires 8 out of 10 to pass.
+- Your current lesson and step, visited steps, answers, completion stamps, drill evidence, best quiz score, XP, and rank persist in browser local storage.
 
 ## Execution Model
 
