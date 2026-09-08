@@ -1,18 +1,13 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo } from 'react'
 import {
-  Activity,
-  BarChart3,
   BookOpen,
   Check,
   CheckCircle2,
   ChevronRight,
-  CircleDollarSign,
-  CloudSun,
   GraduationCap,
   ListChecks,
   Play,
   RotateCcw,
-  SlidersHorizontal,
   Target,
   Trophy,
 } from 'lucide-react'
@@ -23,16 +18,7 @@ import {
   TRAINING_LESSONS,
   scoreQuiz,
 } from './trainingContent.js'
-import LessonVisual from './LessonVisual.jsx'
-
-const LESSON_ICONS = {
-  contract: CircleDollarSign,
-  tape: BarChart3,
-  orders: SlidersHorizontal,
-  liquidity: Activity,
-  charts: Target,
-  fundamentals: CloudSun,
-}
+import LessonCarousel from './LessonCarousel.jsx'
 
 const TRAINING_TABS = [
   { id: 'lessons', label: 'Desk Lessons', icon: BookOpen },
@@ -42,96 +28,6 @@ const TRAINING_TABS = [
 
 function unique(values) {
   return [...new Set(values)]
-}
-
-function LessonLibrary({ completedLessons, onComplete }) {
-  const [selectedId, setSelectedId] = useState(TRAINING_LESSONS[0].id)
-  const selectedIndex = Math.max(0, TRAINING_LESSONS.findIndex((lesson) => lesson.id === selectedId))
-  const lesson = TRAINING_LESSONS[selectedIndex]
-  const complete = completedLessons.includes(lesson.id)
-  const LessonIcon = LESSON_ICONS[lesson.id]
-
-  function moveLesson(offset) {
-    const nextIndex = Math.max(0, Math.min(TRAINING_LESSONS.length - 1, selectedIndex + offset))
-    setSelectedId(TRAINING_LESSONS[nextIndex].id)
-  }
-
-  return (
-    <div className="lesson-layout">
-      <aside className="lesson-index" aria-label="Training lessons">
-        <div className="lesson-index-head">
-          <span className="section-kicker">Binder HH-101</span>
-          <h3>Course Index</h3>
-        </div>
-        <div className="lesson-index-list">
-          {TRAINING_LESSONS.map((item) => {
-            const Icon = LESSON_ICONS[item.id]
-            const itemComplete = completedLessons.includes(item.id)
-            return (
-              <button
-                key={item.id}
-                type="button"
-                className={`${selectedId === item.id ? 'active' : ''} ${itemComplete ? 'complete' : ''}`}
-                onClick={() => setSelectedId(item.id)}
-              >
-                <span className="lesson-number">{item.number}</span>
-                <Icon size={17} aria-hidden="true" />
-                <span><strong>{item.title}</strong><small>{item.duration} / {item.level}</small></span>
-                {itemComplete && <CheckCircle2 size={17} aria-label="Completed" />}
-              </button>
-            )
-          })}
-        </div>
-      </aside>
-
-      <article className="lesson-sheet">
-        <header className="lesson-sheet-head">
-          <div className="lesson-sheet-code"><span>LESSON</span><strong>{lesson.number}</strong></div>
-          <div>
-            <span className="section-kicker">{lesson.label} / {lesson.duration}</span>
-            <h2>{lesson.title}</h2>
-            <p>{lesson.summary}</p>
-          </div>
-          <LessonIcon size={28} aria-hidden="true" />
-        </header>
-
-        <section className="lesson-objectives">
-          <span className="section-kicker">After this sheet</span>
-          <ul>
-            {lesson.objectives.map((objective) => <li key={objective}><Check size={14} aria-hidden="true" />{objective}</li>)}
-          </ul>
-        </section>
-
-        <LessonVisual key={lesson.id} lessonId={lesson.id} />
-
-        <div className="lesson-copy">
-          {lesson.sections.map((section, index) => (
-            <section key={section.title}>
-              <span>{lesson.number}.{index + 1}</span>
-              <div><h3>{section.title}</h3><p>{section.body}</p></div>
-            </section>
-          ))}
-        </div>
-
-        <div className="desk-calculation">
-          <div><span>DESK MATH</span><strong>{lesson.calculation}</strong></div>
-          <p><b>Pin this:</b> {lesson.takeaway}</p>
-        </div>
-
-        <footer className="lesson-actions">
-          <button type="button" className="sheet-nav previous" disabled={selectedIndex === 0} onClick={() => moveLesson(-1)}>
-            <ChevronRight size={16} aria-hidden="true" /> Previous
-          </button>
-          <button type="button" className={`lesson-complete ${complete ? 'complete' : ''}`} disabled={complete} onClick={() => onComplete(lesson.id)}>
-            {complete ? <CheckCircle2 size={17} /> : <Check size={17} />}{complete ? 'Lesson stamped' : 'Mark lesson complete'}
-          </button>
-          <button type="button" className="sheet-nav" disabled={selectedIndex === TRAINING_LESSONS.length - 1} onClick={() => moveLesson(1)}>
-            Next <ChevronRight size={16} aria-hidden="true" />
-          </button>
-        </footer>
-      </article>
-    </div>
-  )
 }
 
 function GuidedTutorial({ completedDrills, liveDrills, onComplete, onPractice }) {
@@ -294,7 +190,7 @@ export default function TrainingCenter({ record, setRecord, activeTab, setActive
         })}
       </nav>
 
-      {activeTab === 'lessons' && <LessonLibrary completedLessons={completedLessons} onComplete={completeLesson} />}
+      {activeTab === 'lessons' && <LessonCarousel record={record} setRecord={setRecord} onComplete={completeLesson} />}
       {activeTab === 'tutorial' && <GuidedTutorial completedDrills={completedDrills} liveDrills={liveDrills} onComplete={completeDrill} onPractice={onPractice} />}
       {activeTab === 'quiz' && <KnowledgeQuiz record={record} setRecord={setRecord} />}
     </div>

@@ -36,6 +36,7 @@ import {
 import MarketDepth from './MarketDepth.jsx'
 import OptionsLab from './OptionsLab.jsx'
 import TrainingCenter from './TrainingCenter.jsx'
+import { normalizeLessonProgress } from './lessonCourse.js'
 import TradingChart from './TradingChart.jsx'
 import { PASSING_QUIZ_SCORE } from './trainingContent.js'
 import {
@@ -114,6 +115,8 @@ function loadTrainingRecord() {
       quizAnswers: parsed?.quizAnswers && typeof parsed.quizAnswers === 'object' ? parsed.quizAnswers : {},
       quizSubmitted: Boolean(parsed?.quizSubmitted),
       quizBest: Number.isFinite(parsed?.quizBest) ? parsed.quizBest : 0,
+      activeLesson: typeof parsed?.activeLesson === 'string' ? parsed.activeLesson : 'contract',
+      lessonProgress: normalizeLessonProgress(parsed?.lessonProgress),
     }
   } catch {
     return fallback

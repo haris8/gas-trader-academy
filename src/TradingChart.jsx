@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   Crosshair,
   Minus,
@@ -13,13 +13,14 @@ import {
   bollingerBands,
   clamp,
   exponentialMovingAverage,
+  formatMoney,
   formatPrice,
   formatSigned,
   simpleMovingAverage,
   volumeWeightedAveragePrice,
 } from './simulator.js'
 
-const VIEWBOX_WIDTH = 980
+const DEFAULT_VIEWBOX_WIDTH = 980
 const VIEWBOX_HEIGHT = 430
 const PAD = { top: 22, right: 72, bottom: 34, left: 14 }
 const PRICE_BOTTOM = 326
@@ -88,12 +89,25 @@ export default function TradingChart({
   drawings,
   onDrawingsChange,
   onDrawingCreated,
+  initialTool = 'cursor',
+  initialIndicators = { sma: true, ema: false, vwap: true, bands: false },
+  priceBounds,
+  fitContainer = false,
 }) {
+  const chartElement = useRef(null)
+  const [measuredWidth, setMeasuredWidth] = useState(DEFAULT_VIEWBOX_WIDTH)
+  const VIEWBOX_WIDTH = fitContainer ? measuredWidth : DEFAULT_VIEWBOX_WIDTH
   const [timeframe, setTimeframe] = useState(1)
-  const [tool, setTool] = useState('cursor')
+  const [tool, setTool] = useState(initialTool)
   const [pendingPoint, setPendingPoint] = useState(null)
   const [hover, setHover] = useState(null)
-  const [indicators, setIndicators] = useState({ sma: true, ema: false, vwap: true, bands: false })
+  const [indicators, setIndicators] = useState(initialIndicators)
+  useEffect(() => {
+    if (!fitContainer || !chartElement.current) return
+    const observer = new ResizeObserver(([entry]) => setMeasuredWidth(Math.max(240, Math.round(entry.contentRect.width))))
+    observer.observe(chartElement.current)
+    return () => observer.disconnect()
+  }, [fitContainer])
   const displayBars = useMemo(() => aggregateBars(bars, timeframe).slice(-42), [bars, timeframe])
   const sma = useMemo(() => simpleMovingAverage(displayBars, 7), [displayBars])
   const ema = useMemo(() => exponentialMovingAverage(displayBars, 9), [displayBars])
@@ -110,12 +124,14 @@ export default function TradingChart({
   ].filter((value) => Number.isFinite(value))
   const allHighs = displayBars.map((bar) => bar.high).concat(extraPrices)
   const allLows = displayBars.map((bar) => bar.low).concat(extraPrices)
-  const rawMax = Math.max(...allHighs)
-  const rawMin = Math.min(...allLows)
+  const rawMax = Math.max(...allHighs, ...(priceBounds ?? []))
+  const rawMin = Math.min(...allLows, ...(priceBounds ?? []))
   const padding = Math.max(0.018, (rawMax - rawMin) * 0.11)
   const priceMax = rawMax + padding
   const priceMin = rawMin - padding
   const innerWidth = VIEWBOX_WIDTH - PAD.left - PAD.right
+  const timeTickCount = Math.min(6, Math.max(2, Math.floor(innerWidth / 70)))
+  const timeTickStride = Math.max(1, Math.ceil(displayBars.length / timeTickCount))
   const chartHeight = PRICE_BOTTOM - PAD.top
   const candleSlot = innerWidth / Math.max(1, displayBars.length)
   const candleWidth = clamp(candleSlot * 0.58, 3, 14)
@@ -124,6 +140,7 @@ export default function TradingChart({
   const yFor = (price) => PAD.top + ((priceMax - price) / Math.max(0.001, priceMax - priceMin)) * chartHeight
   const volumeY = (volume) => VOLUME_BOTTOM - (volume / maxVolume) * (VOLUME_BOTTOM - VOLUME_TOP)
   const last = displayBars.at(-1)
+  const hoverCardX = hover ? clamp(hover.x > VIEWBOX_WIDTH - 260 ? hover.x - 192 : hover.x + 10, 4, VIEWBOX_WIDTH - 186) : 0
   const yTicks = Array.from({ length: 5 }, (_, index) => priceMax - ((priceMax - priceMin) * index) / 4)
 
   function toggleIndicator(key) {
@@ -131,9 +148,11 @@ export default function TradingChart({
   }
 
   function pointFromEvent(event) {
-    const rect = event.currentTarget.getBoundingClientRect()
-    const x = ((event.clientX - rect.left) / rect.width) * VIEWBOX_WIDTH
-    const y = ((event.clientY - rect.top) / rect.height) * VIEWBOX_HEIGHT
+    // Include the SVG's scale and letterboxing when mapping a pointer to price.
+    const pointer = event.currentTarget.createSVGPoint()
+    pointer.x = event.clientX
+    pointer.y = event.clientY
+    const { x, y } = pointer.matrixTransform(event.currentTarget.getScreenCTM().inverse())
     const barIndex = clamp(Math.floor((x - PAD.left) / candleSlot), 0, displayBars.length - 1)
     const price = priceMax - ((clamp(y, PAD.top, PRICE_BOTTOM) - PAD.top) / chartHeight) * (priceMax - priceMin)
     return {
@@ -191,7 +210,7 @@ export default function TradingChart({
   }
 
   return (
-    <div className="chart-module">
+    <div className="chart-module" ref={chartElement}>
       <div className="chart-toolbar" aria-label="Chart tools">
         <div className="timeframe-control" aria-label="Chart timeframe">
           {[
@@ -350,6 +369,7 @@ export default function TradingChart({
             const startY = yFor(drawing.start.price)
             const endY = yFor(drawing.end.price)
             const ticks = Math.round((drawing.end.price - drawing.start.price) / TICK_SIZE)
+            const measureX = clamp((startX + endX) / 2, 76, VIEWBOX_WIDTH - 76)
             return (
               <g key={drawing.id}>
                 <line x1={startX} x2={endX} y1={startY} y2={endY} className={`user-drawing ${drawing.type}`} />
@@ -357,9 +377,9 @@ export default function TradingChart({
                 <circle cx={endX} cy={endY} r="3.5" className="drawing-anchor" />
                 {drawing.type === 'measure' && (
                   <g>
-                    <rect x={(startX + endX) / 2 - 72} y={(startY + endY) / 2 - 18} width="144" height="26" rx="4" className="measure-badge" />
-                    <text x={(startX + endX) / 2} y={(startY + endY) / 2} textAnchor="middle" className="measure-label">
-                      {formatSigned(ticks)} ticks · {formatSigned(ticks * TICK_SIZE * CONTRACT_SIZE)}
+                    <rect x={measureX - 72} y={(startY + endY) / 2 - 18} width="144" height="26" rx="4" className="measure-badge" />
+                    <text x={measureX} y={(startY + endY) / 2} textAnchor="middle" className="measure-label">
+                      {formatSigned(ticks)} ticks · {formatMoney(ticks * TICK_SIZE * CONTRACT_SIZE)}
                     </text>
                   </g>
                 )}
@@ -380,7 +400,7 @@ export default function TradingChart({
           <line x1={PAD.left} x2={VIEWBOX_WIDTH - PAD.right} y1={VOLUME_TOP - 7} y2={VOLUME_TOP - 7} className="volume-divider" />
           <text x={PAD.left} y={VOLUME_TOP + 4} className="volume-label">VOL</text>
 
-          {displayBars.filter((_, index) => index % Math.max(1, Math.ceil(displayBars.length / 6)) === 0).map((bar) => {
+          {displayBars.filter((_, index) => index % timeTickStride === 0).map((bar) => {
             const index = displayBars.indexOf(bar)
             return (
               <text key={`time-${bar.index}`} x={xFor(index)} y={VIEWBOX_HEIGHT - 10} textAnchor="middle" className="chart-axis-text">
@@ -393,14 +413,14 @@ export default function TradingChart({
             <g className="crosshair-layer">
               <line x1={hover.x} x2={hover.x} y1={PAD.top} y2={VOLUME_BOTTOM} />
               <line x1={PAD.left} x2={VIEWBOX_WIDTH - PAD.right} y1={hover.y} y2={hover.y} />
-              <rect x={hover.x > VIEWBOX_WIDTH - 260 ? hover.x - 192 : hover.x + 10} y={34} width="182" height="72" rx="5" className="crosshair-card" />
-              <text x={hover.x > VIEWBOX_WIDTH - 260 ? hover.x - 182 : hover.x + 20} y={54} className="crosshair-title">
+              <rect x={hoverCardX} y={34} width="182" height="72" rx="5" className="crosshair-card" />
+              <text x={hoverCardX + 10} y={54} className="crosshair-title">
                 {hover.bar.time}
               </text>
-              <text x={hover.x > VIEWBOX_WIDTH - 260 ? hover.x - 182 : hover.x + 20} y={74} className="crosshair-value">
+              <text x={hoverCardX + 10} y={74} className="crosshair-value">
                 O {hover.bar.open.toFixed(3)}  H {hover.bar.high.toFixed(3)}
               </text>
-              <text x={hover.x > VIEWBOX_WIDTH - 260 ? hover.x - 182 : hover.x + 20} y={94} className="crosshair-value">
+              <text x={hoverCardX + 10} y={94} className="crosshair-value">
                 L {hover.bar.low.toFixed(3)}  C {hover.bar.close.toFixed(3)}
               </text>
             </g>

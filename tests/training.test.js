@@ -66,6 +66,7 @@ test('interactive depth board reports slippage and exhausted liquidity', () => {
   assert.equal(multiLevel.filled, 10)
   assert.equal(multiLevel.remaining, 0)
   assert.equal(multiLevel.averagePrice, 3.1119)
+  assert.equal(multiLevel.slippageTicks, 0.9)
   assert.equal(oversized.filled, 21)
   assert.equal(oversized.remaining, 4)
 })

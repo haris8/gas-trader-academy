@@ -38,17 +38,17 @@ const PLAIN_NOTES = {
   fundamentals: 'Gas prices respond to changing expectations. A bullish fact can still produce a selloff if traders expected something stronger.',
 }
 
-function LabShell({ lessonId, title, prompt, status, children }) {
+function LabShell({ lessonId, title, prompt, status, note, children }) {
   return (
     <section className={`lesson-lab lesson-lab-${lessonId}`} aria-label={`${title} interactive exercise`}>
       <header className="lesson-lab-head">
         <div><span>HANDS-ON BOARD</span><h3>{title}</h3><p>{prompt}</p></div>
-        <div className="lesson-lab-live"><Activity size={14} />LIVE</div>
+        <div className="lesson-lab-live"><Activity size={14} />PRACTICE</div>
       </header>
       <div className="lesson-lab-stage">{children}</div>
       <footer className="lesson-lab-footer">
         <MousePointer2 size={16} aria-hidden="true" />
-        <p><b>In plain English:</b> {PLAIN_NOTES[lessonId]}</p>
+        <p><b>In plain English:</b> {note ?? PLAIN_NOTES[lessonId]}</p>
         <strong>{status}</strong>
       </footer>
     </section>
@@ -96,14 +96,14 @@ function ContractLab() {
 
       <label className="lab-slider">
         <span><b>Price move</b><em>Drag through a falling or rising market</em></span>
-        <input type="range" min="-60" max="60" step="1" value={moveTicks} onChange={(event) => setMoveTicks(Number(event.target.value))} />
+        <input aria-label="Price move in ticks" type="range" min="-60" max="60" step="1" value={moveTicks} onInput={(event) => setMoveTicks(Number(event.target.value))} onChange={(event) => setMoveTicks(Number(event.target.value))} />
         <div><small>-60 ticks</small><small>Entry</small><small>+60 ticks</small></div>
       </label>
     </LabShell>
   )
 }
 
-function TapeLab() {
+function TapeLab({ focused = false }) {
   const [action, setAction] = useState('buy')
   const bid = 3.108
   const ask = 3.111
@@ -117,12 +117,12 @@ function TapeLab() {
       prompt="Choose an immediate action, then trace which advertised price your order reaches."
       status={`${((ask - bid) / 0.001).toFixed(0)}-tick spread = $${((ask - bid) * 10000).toFixed(0)} per contract`}
     >
-      <div className="tape-lab-grid">
-        <div className="candle-inspector" aria-label="Candlestick with open, high, low, and close labels">
+      <div className={`tape-lab-grid ${focused ? 'quotes-only' : ''}`}>
+        {!focused && <div className="candle-inspector" aria-label="Candlestick with open, high, low, and close labels">
           <div className="candle-scale"><span>H 3.118</span><span>C 3.109</span><span>O 3.102</span><span>L 3.095</span></div>
           <div className="training-candle"><i className="wick" /><i className="body" /></div>
           <div className="candle-caption"><BarChart3 size={16} /><span>15-minute candle</span><strong>Close above open</strong></div>
-        </div>
+        </div>}
 
         <div className="inside-market">
           <div className={`inside-quote bid ${action === 'sell' ? 'hit' : ''}`}><span>BID</span><strong>${bid.toFixed(3)}</strong><small>best buyer</small></div>
@@ -216,7 +216,7 @@ function LiquidityLab() {
     >
       <label className="liquidity-size-control">
         <span><PackageOpen size={17} /><b>Market buy size</b><strong>{quantity} contracts</strong></span>
-        <input type="range" min="1" max="25" step="1" value={quantity} onChange={(event) => setQuantity(Number(event.target.value))} />
+        <input aria-label="Market buy size" type="range" min="1" max="25" step="1" value={quantity} onInput={(event) => setQuantity(Number(event.target.value))} onChange={(event) => setQuantity(Number(event.target.value))} />
       </label>
       <div className="liquidity-presets" aria-label="Order-size examples">
         {[{ value: 4, label: 'Fit best ask' }, { value: 10, label: 'Walk the book' }, { value: 25, label: 'Exceed depth' }].map((preset) => (
@@ -334,11 +334,11 @@ const INITIAL_SIGNALS = [
   { id: 'weather', name: 'Hotter forecast', group: 'DEMAND', impact: 2, active: true },
   { id: 'production', name: 'Higher production', group: 'SUPPLY', impact: -2, active: true },
   { id: 'lng', name: 'More LNG feedgas', group: 'DEMAND', impact: 2, active: false },
-  { id: 'storage', name: 'Large injection', group: 'SUPPLY', impact: -2, active: false },
+  { id: 'storage', name: 'Larger-than-expected injection', group: 'SUPPLY', impact: -2, active: false },
 ]
 
-function FundamentalsLab() {
-  const [mode, setMode] = useState('balance')
+function FundamentalsLab({ initialMode = 'balance', focused = false }) {
+  const [mode, setMode] = useState(initialMode)
   const [signals, setSignals] = useState(INITIAL_SIGNALS)
   const [optionType, setOptionType] = useState('call')
   const [settlement, setSettlement] = useState(3.18)
@@ -353,13 +353,14 @@ function FundamentalsLab() {
     <LabShell
       lessonId="fundamentals"
       title="Balance and Risk Console"
-      prompt="Build a physical-market view, then switch to Option Risk to see how premium changes the payoff."
+      prompt={mode === 'balance' ? 'Change one supply or demand factor at a time and compare the combined pressure.' : 'Change the futures price at expiration. Compare the option value with the premium paid.'}
       status={mode === 'balance' ? balance.label : `${optionType.toUpperCase()} break-even $${option.breakEven.toFixed(3)}`}
+      note={mode === 'options' ? 'At expiry, subtract the premium you paid from the option value to find your profit or loss. A purchased option can lose its whole premium.' : undefined}
     >
-      <div className="fundamental-mode-tabs lab-segment" aria-label="Fundamentals exercise mode">
+      {!focused && <div className="fundamental-mode-tabs lab-segment" aria-label="Fundamentals exercise mode">
         <button type="button" className={mode === 'balance' ? 'active' : ''} onClick={() => setMode('balance')}><Gauge size={15} />Balance board</button>
         <button type="button" className={mode === 'options' ? 'active' : ''} onClick={() => setMode('options')}><CircleDollarSign size={15} />Option risk</button>
-      </div>
+      </div>}
 
       {mode === 'balance' ? (
         <div className="balance-console">
@@ -386,27 +387,27 @@ function FundamentalsLab() {
               <button type="button" className={optionType === 'call' ? 'active' : ''} onClick={() => setOptionType('call')}><ArrowUp size={14} />Long call</button>
               <button type="button" className={optionType === 'put' ? 'active' : ''} onClick={() => setOptionType('put')}><ArrowDown size={14} />Long put</button>
             </div>
-            <dl><div><dt>Strike</dt><dd>$3.100</dd></div><div><dt>Premium paid</dt><dd>$1,200</dd></div><div><dt>Maximum loss</dt><dd>$1,200</dd></div></dl>
+            <dl><div><dt>Strike</dt><dd>$3.100</dd></div><div><dt>Premium paid</dt><dd>$1,200</dd></div><div><dt>Max loss before fees</dt><dd>$1,200</dd></div></dl>
           </div>
           <label className="option-settlement-slider">
             <span><b>Futures price at expiration</b><strong>${settlement.toFixed(3)}</strong></span>
-            <input type="range" min="2.8" max="3.4" step="0.01" value={settlement} onChange={(event) => setSettlement(Number(event.target.value))} />
-            <div className="option-payoff-line"><i className="strike" /><i className="breakeven" style={{ left: `${((option.breakEven - 2.8) / 0.6) * 100}%` }} /><i className="settlement" style={{ left: `${((settlement - 2.8) / 0.6) * 100}%` }} /></div>
+            <input aria-label="Futures price at expiration" type="range" min="2.8" max="3.4" step="0.01" value={settlement} onInput={(event) => setSettlement(Number(event.target.value))} onChange={(event) => setSettlement(Number(event.target.value))} />
+            <div className={`option-payoff-line ${optionType}`}><i className="strike" /><i className="breakeven" style={{ left: `${((option.breakEven - 2.8) / 0.6) * 100}%` }} /><i className="settlement" style={{ left: `${((settlement - 2.8) / 0.6) * 100}%` }} /></div>
             <div className="option-line-labels"><small>$2.800</small><small>Strike</small><small>$3.400</small></div>
           </label>
-          <div className={`option-outcome ${option.pnl >= 0 ? 'gain' : 'loss'}`}><Calculator size={20} /><span>Expiration P&L</span><strong>{option.pnl >= 0 ? '+' : '-'}{money.format(Math.abs(option.pnl))}</strong><small>Intrinsic value minus premium paid</small></div>
+          <div className={`option-outcome ${option.pnl >= 0 ? 'gain' : 'loss'}`}><Calculator size={20} /><span>Expiration P&L</span><strong>{option.pnl >= 0 ? '+' : '-'}{money.format(Math.abs(option.pnl))}</strong><small>Value {money.format(option.intrinsic * 10000)} minus $1,200 paid. Before fees.</small></div>
         </div>
       )}
     </LabShell>
   )
 }
 
-export default function LessonVisual({ lessonId }) {
+export default function LessonVisual({ lessonId, initialMode, focused }) {
   if (lessonId === 'contract') return <ContractLab />
-  if (lessonId === 'tape') return <TapeLab />
+  if (lessonId === 'tape') return <TapeLab focused={focused} />
   if (lessonId === 'orders') return <OrdersLab />
   if (lessonId === 'liquidity') return <LiquidityLab />
   if (lessonId === 'charts') return <ChartLab />
-  if (lessonId === 'fundamentals') return <FundamentalsLab />
+  if (lessonId === 'fundamentals') return <FundamentalsLab initialMode={initialMode} focused={focused} />
   return null
 }

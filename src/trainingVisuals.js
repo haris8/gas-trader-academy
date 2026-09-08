@@ -24,7 +24,7 @@ export function walkTrainingBook(quantity, levels = TRAINING_ASKS) {
   })
 
   const averagePrice = filled ? notional / filled : 0
-  const slippageTicks = filled ? Math.round((averagePrice - levels[0].price) / 0.001) : 0
+  const slippageTicks = filled ? Number(((averagePrice - levels[0].price) / 0.001).toFixed(2)) : 0
 
   return { executions, filled, remaining, averagePrice, slippageTicks }
 }

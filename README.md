@@ -32,11 +32,14 @@ npm.cmd run build
 
 ## Training Center
 
-- Lessons explain the NG contract, bid/ask tape, order types, liquidity, chart tools, and fundamental volatility.
-- Every lesson includes a focused interactive board with live calculations, visual feedback, and a plain-English takeaway.
+- Six beginner-first lesson carousels contain 39 short steps covering the NG contract, bid/ask tape, orders, liquidity, chart tools, fundamentals, and options.
+- Each step introduces its terms, walks through a numerical example, and provides focused practice plus a connection to the actual trading desk.
+- Practice includes quote-by-quote order replays, stop gaps, linked exits, partial fills, queue position, storage surprises, delivery-month curves, and option payoff/time-value controls.
+- Chart lessons use the same chart as the Trade Floor, with isolated practice drawings and indicator controls that do not change the trading account.
+- Understanding checks give immediate explanations and allow retries. New lesson completion requires visiting every step and answering the check correctly; existing completion stamps are preserved.
 - Guided drills route learners back to the Trade Desk and highlight the exact quote, ticket, order book, or chart control to use.
 - The knowledge check grades each answer with a desk-focused explanation and requires 8 out of 10 to pass.
-- Completed lessons, drill evidence, best quiz score, XP, and rank persist in browser local storage.
+- Your current lesson and step, visited steps, answers, completion stamps, drill evidence, best quiz score, XP, and rank persist in browser local storage.
 
 ## Execution Model
 
