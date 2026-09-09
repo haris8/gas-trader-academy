@@ -13,6 +13,10 @@ npm.cmd run dev
 
 Open `http://localhost:5173`.
 
+## Website Hosting
+
+The simulator is configured for GitHub Pages at `https://trade.harissiddiqui.me`, alongside the existing portfolio. See [DEPLOYMENT.md](DEPLOYMENT.md) for GitHub setup, the single Namecheap DNS record, and HTTPS verification. The workflow tests and builds before publishing; no local server is needed for the hosted version.
+
 ## Verify
 
 ```powershell
